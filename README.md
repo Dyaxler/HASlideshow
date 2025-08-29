@@ -8,11 +8,11 @@ Useful to show your preferred dashboard on a clean Raspberry Pi Touch Display 2.
 <img width="1280" height="720" alt="screenshot" src="https://github.com/user-attachments/assets/31b90650-5f84-4289-bbb1-e5bdf429fff2" />
 
 ## Manual install
-1. Download the `background_slideshow.js` script and place it into the `www/HASlideshow` folder of your Home Assistant installation.
+1. Download the `haslideshow.js` script and place it into the `www/HASlideshow` folder of your Home Assistant installation.
 
 2. In Home Assistant, navigate to `Settings` > `Dashboards`, open the three-dots menu and select `resources`; alternatively, point your browser to `/config/lovelace/resources`.
 
-3. Add a new resource as a _javascript module_ pointing to the `/local/HASlideshow/background_slideshow.js` URL.
+3. Add a new resource as a _javascript module_ pointing to the `/local/HASlideshow/haslideshow.js` URL.
 
 ## Setup your HASlideshow Theme
 1. Using File editor in Home Assistant, place the following code into your `themes.yaml` file; don't forget to update the values with your preference to use Double-Tap or your own updateInterval and transitionDuration values. Double check your `configuration.yaml` to see which "theme" file is being loaded/referenced. You might not be using `themes.yaml` as your main theme config file. You'll know you did it correctly in a later step when we go to apply the `HASlideshow` theme in your Lovelace Dashboard settings. If you've already created and are using your own custom theme for a specific Dashboard, then you can add the block below to the bottom of your custom theme; just omit the `HASlideshow:` line and add the raw VAR's to your custom theme file.
@@ -58,7 +58,7 @@ You should immediately see one of the background images pop up and at first, the
   ...
 ```
 
-Make sure that the numerical sequence has no gaps. Or you can download the 10 images I've provided in this repo. It just needs to be in a sub-directory below the location of the `background_slideshow.js` file.
+Make sure that the numerical sequence has no gaps. Or you can download the 10 images I've provided in this repo. It just needs to be in a sub-directory below the location of the `haslideshow.js` file.
 
 ## Troubleshooting
 Any change to the JS Script or the contents of the `www` folder might require clearing the cache of your browser or the companion mobile app. I've never had to do this if I made changes to the theme file and reloaded it. A quick refresh should be sufficient.
