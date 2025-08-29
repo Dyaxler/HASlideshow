@@ -29,6 +29,21 @@ _This will download and install the `haslideshow.js` file for you and create the
 
 6. In the bottom right hand corner, click the `Download` button.
 
+## Create the images folder
+1. Create a `backgrounds` folder under `www/HASlideshow` - NOTE: Do NOT make a sub-directory under `www/community/HASlideshow`. This folder will be deleted when ever an update to HASlideshow is pushed.
+   
+2. Drop your images there
+
+3. Rename the images according to the following naming convention:
+
+```
+  0.jpg
+  1.jpg
+  ...
+```
+
+Make sure that the numerical sequence has no gaps. Or you can download the 10 images I've provided in this repo. They just need to be in the sub-directory outlined above. Pay special attention to the NOTE for those using HACS.
+
 ## Setup your HASlideshow Theme
 _Unfortunatly, this is a neccessy and MANUAL step. HACS doesn't allow multipule catagories from the same repo. The JS file is a Dashboard Plugin that relies on the following custom Theme in order to work correctly._
 
@@ -58,21 +73,6 @@ HASlideshow:
 5. You should be looking at a bunch of settings for your Dashboard. Find the field marked `Theme` and click the drop-down arrow. If you've done step 1 correctly, you should see `HASlideshow` listed here. Select it and click `Save`.
 
 You should immediately see one of the background images pop up and at first, they will rotate every 10 seconds (fallback default). This is by design until you fully refresh your browser (default 600 seconds = 5 min). Use `CTRL + SHIFT + R` to bypass the cache (works with most Windows OS Browsers - not sure what key strokes are on the Mac) and apply the CSS Vars with your preferred settings. This is sometimes necessary to perform this step if you're not immediately seeing images appear or if the Double-Tap feature doesn't work. Certain browsers are persnickety.
-
-## Create the images folder
-1. Create a `backgrounds` folder under `www/HASlideshow` - NOTE: Do NOT make a sub-directory under `www/community/HASlideshow`. This folder will be deleted when ever an update to HASlideshow is pushed.
-   
-2. Drop your images there
-
-3. Rename the images according to the following naming convention:
-
-```
-  0.jpg
-  1.jpg
-  ...
-```
-
-Make sure that the numerical sequence has no gaps. Or you can download the 10 images I've provided in this repo. They just need to be in the sub-directory outlined above. Pay special attention to the NOTE for those using HACS.
 
 ## Features
 * Double tap anywhere on the screen to skip to the next image (Works with either a mouse pointer or a finger on touch screens).
