@@ -14,7 +14,24 @@ Useful to show your preferred dashboard on a clean Raspberry Pi Touch Display 2.
 
 3. Add a new resource as a _javascript module_ pointing to the `/local/HASlideshow/haslideshow.js` URL.
 
+## Install via HACS
+_This will download and install the `haslideshow.js` file for you and create the neccessary resource pointer. You'll also be notified of any updates to HASlideshow within Home Assistant._
+
+1. In Home Assistant, navigate to `HACS`.
+
+2. Open the three-dots menu un the far upper right hand corner and select `Custom Repositories`.
+
+3. In the `Repository` field, paste this GitHub Repo's URL: `https://github.com/Dyaxler/HASlideshow`.
+
+4. In the `Type` field click the drop down menu and select `Dashboard` then click the `ADD` button.
+
+5. Refresh your browser then look for `HASlideshow` in the `Downloaded` section or do a search for it and then click on it.
+
+6. In the bottom right hand corner, click the `Download` button.
+
 ## Setup your HASlideshow Theme
+_Unfortunatly, this is a neccessy and MANUAL step. HACS doesn't allow multipule catagories from the same repo. The JS file is a Dashboard Plugin that relies on the following custom Theme in order to work correctly._
+
 1. Using File editor in Home Assistant, place the following code into your `themes.yaml` file; don't forget to update the values with your preference to use Double-Tap or your own updateInterval and transitionDuration values. Double check your `configuration.yaml` to see which "theme" file is being loaded/referenced. You might not be using `themes.yaml` as your main theme config file. You'll know you did it correctly in a later step when we go to apply the `HASlideshow` theme in your Lovelace Dashboard settings. If you've already created and are using your own custom theme for a specific Dashboard, then you can add the block below to the bottom of your custom theme; just omit the `HASlideshow:` line and add the raw VAR's to your custom theme file.
 
 ```
@@ -42,14 +59,11 @@ HASlideshow:
 
 You should immediately see one of the background images pop up and at first, they will rotate every 10 seconds (fallback default). This is by design until you fully refresh your browser (default 600 seconds = 5 min). Use `CTRL + SHIFT + R` to bypass the cache (works with most Windows OS Browsers - not sure what key strokes are on the Mac) and apply the CSS Vars with your preferred settings. This is sometimes necessary to perform this step if you're not immediately seeing images appear or if the Double-Tap feature doesn't work. Certain browsers are persnickety.
 
-## Features
-* Double tap anywhere on the screen to skip to the next image (Works with either a mouse pointer or a finger on touch screens).
-* Specify your own Background Update Interval (in seconds).
-* Specify your own Transition Animation Duration (in milliseconds).
-
-## Where do I put the images?
-1. Create a `backgrounds` folder under `www/HASlideshow`
+## Create the images folder
+1. Create a `backgrounds` folder under `www/HASlideshow` - NOTE: Do NOT make a sub-directory under `www/community/HASlideshow`. This folder will be deleted when ever an update to HASlideshow is pushed.
+   
 2. Drop your images there
+
 3. Rename the images according to the following naming convention:
 
 ```
@@ -58,7 +72,12 @@ You should immediately see one of the background images pop up and at first, the
   ...
 ```
 
-Make sure that the numerical sequence has no gaps. Or you can download the 10 images I've provided in this repo. It just needs to be in a sub-directory below the location of the `haslideshow.js` file.
+Make sure that the numerical sequence has no gaps. Or you can download the 10 images I've provided in this repo. They just need to be in the sub-directory outlined above. Pay special attention to the NOTE for those using HACS.
+
+## Features
+* Double tap anywhere on the screen to skip to the next image (Works with either a mouse pointer or a finger on touch screens).
+* Specify your own Background Update Interval (in seconds).
+* Specify your own Transition Animation Duration (in milliseconds).
 
 ## Troubleshooting
 Any change to the JS Script or the contents of the `www` folder might require clearing the cache of your browser or the companion mobile app. I've never had to do this if I made changes to the theme file and reloaded it. A quick refresh should be sufficient.
