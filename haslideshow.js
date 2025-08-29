@@ -77,23 +77,8 @@
     });
   }
 
-  ///////////////////////////////////////////////////////////////////////////////////////
   // Path where images are stored. NOTE: rename image files to 0.jpg, 1.jpg sequentially
-  
-  // Get the directory of the current script
-  const scriptURL = new URL(import.meta.url);
-  let dirname = scriptURL.pathname.substring(0, scriptURL.pathname.lastIndexOf('/') + 1);
-  
-  // Adjust for HACS /hacsfiles/ mapping if present
-  let basePath = dirname;
-  if (dirname.startsWith('/hacsfiles/')) {
-    const repoName = dirname.split('/')[2];  // Extracts 'HASlideshow'
-    basePath = `/local/community/${repoName}/`;
-  }
-  
-  // Construct the backgrounds path relative to the adjusted base
-  const path = basePath + 'backgrounds/';
-  ////////////////////////////////////////////////////////////////////////////////////////
+  const path = "/local/HASlideshow/backgrounds/";
 
   checkNumber(0, function (exists) {
     if (exists) recur(2, 1);
