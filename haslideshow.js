@@ -80,7 +80,12 @@
   }
 
   // Path where images are stored. NOTE: rename image files to 0.jpg, 1.jpg sequentially
-  const path = "/local/HASlideshow/backgrounds/";
+  // Get the directory of the current script
+  const scriptURL = new URL (import.meta.url);
+  const dirname = scriptURL.pathname.substring (0, scriptURL.pathname.lastIndexOf('/') + 1);
+
+  // Construct the backgrounds path relative to it
+  const path = dirname + 'backgrounds/';
 
   checkNumber(0, function (exists) {
     if (exists) recur(2, 1);
