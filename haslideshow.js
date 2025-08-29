@@ -1,5 +1,5 @@
 {
-  // formatting for debug output
+  // Formatting for debug output
   function info(obj) {
     console.log(
       '%c Background Slideshow %c ' + (typeof obj == "string" ? obj : JSON.stringify(obj)),
@@ -55,10 +55,8 @@
     checkNumber(n, function (exists) {
       debug("interval: " + interval + " n: " + n + (exists ? " exists" : " not found"));
       upward = upward && exists;
-
       if (upward) interval *= 2;
       else interval /= 2;
-
       if (exists) {
         if (interval >= 1) recur(n + interval, interval);
         else {
@@ -79,13 +77,23 @@
     });
   }
 
+  ///////////////////////////////////////////////////////////////////////////////////////
   // Path where images are stored. NOTE: rename image files to 0.jpg, 1.jpg sequentially
+  
   // Get the directory of the current script
-  const scriptURL = new URL (import.meta.url);
-  const dirname = scriptURL.pathname.substring (0, scriptURL.pathname.lastIndexOf('/') + 1);
-
-  // Construct the backgrounds path relative to it
-  const path = dirname + 'backgrounds/';
+  const scriptURL = new URL(import.meta.url);
+  let dirname = scriptURL.pathname.substring(0, scriptURL.pathname.lastIndexOf('/') + 1);
+  
+  // Adjust for HACS /hacsfiles/ mapping if present
+  let basePath = dirname;
+  if (dirname.startsWith('/hacsfiles/')) {
+    const repoName = dirname.split('/')[2];  // Extracts 'HASlideshow'
+    basePath = `/local/community/${repoName}/`;
+  }
+  
+  // Construct the backgrounds path relative to the adjusted base
+  const path = basePath + 'backgrounds/';
+  ////////////////////////////////////////////////////////////////////////////////////////
 
   checkNumber(0, function (exists) {
     if (exists) recur(2, 1);
@@ -110,6 +118,7 @@
     if (bgNew) bgNew.style.opacity = '0';
   }
 
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////
   // This path might need updating from time to time after an HA update. No matter where the theme is
   // applied, (Globally, by User, or by Dashboard) this should find the CSS vars injected by the
   // HASlideshow theme. The deepest element where a theme could be applied are the individual Lovelace
@@ -121,7 +130,8 @@
       .querySelector("hui-root").shadowRoot
       .querySelector("hui-view-container#view");
   }
-
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////
+  
   function bs_checkBackgroundElement(featureVar) {
     const elem = bs_getBackgroundElement();
 
@@ -151,7 +161,6 @@
   // This retrieves the speed of the image transition animation - default 1000 milliseconds
   const transitionDurationValue = bs_checkBackgroundElement('--bs-transitionDuration');
   const transitionDuration = transitionDurationValue ? parseInt(transitionDurationValue, 10) : 1000;
-
   ///////////////////////////////////////////////////////////////////////////////////////////////////
 
   let current;
