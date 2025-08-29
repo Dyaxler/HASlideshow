@@ -1,0 +1,8 @@
+{
+  "name": "HASlideshow",
+  "render_readme": true,
+  "filename": "haslideshow.js",
+  "homeassistant": "2025.8.3",
+  "hacs": "2.0.5",
+  "content_in_root": false
+}
