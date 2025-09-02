@@ -108,15 +108,20 @@ function bs_clearBackground() {
 // HASlideshow theme. The deepest element where a theme could be applied are the individual Lovelace
 // dashboards so we just need to make sure the path crawls deep enough to find the <hui-view-container>.
 function bs_getBackgroundElement() {
-  return document.querySelector("body > home-assistant")
-    ?.shadowRoot
-    ?.querySelector("home-assistant-main")
-    ?.shadowRoot
-    ?.querySelector("ha-drawer > partial-panel-resolver > ha-panel-lovelace")
-    ?.shadowRoot
-    ?.querySelector("hui-root")
-    ?.shadowRoot
-    ?.querySelector("hui-view-container#view");
+  try {
+    return document.querySelector("body > home-assistant")
+      .shadowRoot
+      .querySelector("home-assistant-main")
+      .shadowRoot
+      .querySelector("ha-drawer > partial-panel-resolver > ha-panel-lovelace")
+      .shadowRoot
+      .querySelector("hui-root")
+      .shadowRoot
+      .querySelector("hui-view-container#view");
+  } catch (e) {
+    debug("Error accessing background element DOM: " + e.message);
+    return null;
+  }
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
