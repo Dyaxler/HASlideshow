@@ -94,12 +94,18 @@ function bs_clearBackground() {
     debug("Cleared background style");
   }
 
-  // Also hide transition backgrounds
+  // Also hide transition backgrounds instantly (no transition)
   const bgOld = bs_getBackgroundElement()?.querySelector('#bs-bg-old');
   const bgNew = bs_getBackgroundElement()?.querySelector('#bs-bg-new');
 
-  if (bgOld) bgOld.style.opacity = '0';
-  if (bgNew) bgNew.style.opacity = '0';
+  if (bgOld) {
+    bgOld.style.transition = 'none';
+    bgOld.style.opacity = '0';
+  }
+  if (bgNew) {
+    bgNew.style.transition = 'none';
+    bgNew.style.opacity = '0';
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -184,6 +190,9 @@ function bs_ensureBackgroundLayers() {
     bgOld.style.zIndex = '-2';
     view.insertBefore(bgOld, view.firstChild);
     debug("Created bg-old layer");
+  } else {
+    // Restore transition if it was disabled (e.g., during clear)
+    bgOld.style.transition = `opacity ${transitionDuration / 1000}s ease-in-out`;
   }
 
   if (!bgNew) {
@@ -202,6 +211,9 @@ function bs_ensureBackgroundLayers() {
     bgNew.style.zIndex = '-1';
     view.insertBefore(bgNew, view.firstChild);
     debug("Created bg-new layer");
+  } else {
+    // Restore transition if it was disabled (e.g., during clear)
+    bgNew.style.transition = `opacity ${transitionDuration / 1000}s ease-in-out`;
   }
 }
 
@@ -314,9 +326,15 @@ function bs_start() {
 
   debug(`Started interval updates every ${updateInterval} seconds`);
 
-  // Listen for navigation to re-check enablement
+  // Listen for navigation to immediately clear and then re-check enablement after a short delay
   window.addEventListener('location-changed', () => {
     debug("Detected navigation (location-changed event)");
-    bs_update();
+    // Immediately clear the old background to prevent lingering
+    bs_clearBackground();
+    // After a short delay to allow the new view's theme to apply, perform the full update/check
+    setTimeout(() => {
+      debug("Post-navigation delayed update");
+      bs_update();
+    }, 100); // 100ms delay; adjust if needed based on observed load times
   });
 }
