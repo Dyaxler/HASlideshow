@@ -17,7 +17,7 @@ function debug(obj) {
 
 /////////////////////////////////////////////////////////////////
 // This code block randomizes the background images. Mostly...
-let imagesCount, seed;
+let seed;
 const getPrimes = (min, max) => {
   const result = Array(max + 1)
     .fill(0)
@@ -38,55 +38,62 @@ seed = getRandPrime(1, 100000);
 debug("Seed initialized: " + seed);
 /////////////////////////////////////////////////////////////////
 
-// Count the number of image files
-function checkNumber(n, callback) {
-  var http = new XMLHttpRequest();
-  http.open('HEAD', path + n + ".jpg");
-  http.onreadystatechange = function () {
-    if (this.readyState == this.DONE) {
-      debug("Checked image " + n + ".jpg, exists: " + (this.status != 404));
-      callback(this.status != 404);
-    }
-  };
-  http.send();
-}
+const defaultPath = "/local/HASlideshow/backgrounds/";
 
-let upward = true;
-function recur(n, interval) {
-  checkNumber(n, function (exists) {
-    debug("interval: " + interval + " n: " + n + (exists ? " exists" : " not found"));
-    upward = upward && exists;
-    if (upward) interval *= 2;
-    else interval /= 2;
-    if (exists) {
-      if (interval >= 1) recur(n + interval, interval);
-      else {
-        imagesCount = n + 1;
-        info(imagesCount + " pics available");
-        debug("Images count set, starting slideshow");
-        bs_start();
+// Cache for each path: {imagesCount, current}
+const pathData = new Map();
+
+let currentPath;
+
+// Function to count images for a given path
+function countImagesForPath(path, callback) {
+  function checkNumber(n, cb) {
+    var http = new XMLHttpRequest();
+    http.open('HEAD', path + n + ".jpg");
+    http.onreadystatechange = function () {
+      if (this.readyState == this.DONE) {
+        debug("Checked image " + n + ".jpg, exists: " + (this.status != 404));
+        cb(this.status != 404);
       }
-    } else {
-      if (interval >= 1) recur(n - interval, interval);
-      else {
-        imagesCount = n;
-        info(imagesCount + " pics available");
-        debug("Images count set, starting slideshow");
-        bs_start();
+    };
+    http.send();
+  }
+
+  let upward = true;
+  function recur(n, interval) {
+    checkNumber(n, function (exists) {
+      debug("interval: " + interval + " n: " + n + (exists ? " exists" : " not found"));
+      upward = upward && exists;
+      if (upward) interval *= 2;
+      else interval /= 2;
+      if (exists) {
+        if (interval >= 1) recur(n + interval, interval);
+        else {
+          const imagesCount = n + 1;
+          info(imagesCount + " pics available in " + path);
+          debug("Images count set for " + path);
+          callback(imagesCount);
+        }
+      } else {
+        if (interval >= 1) recur(n - interval, interval);
+        else {
+          const imagesCount = n;
+          info(imagesCount + " pics available in " + path);
+          debug("Images count set for " + path);
+          callback(imagesCount);
+        }
       }
+    });
+  }
+
+  checkNumber(0, function (exists) {
+    if (exists) recur(2, 1);
+    else {
+      info("No local images found in " + path + ", slideshow disabled for this path");
+      callback(0);
     }
   });
 }
-
-// Path where images are stored. NOTE: rename image files to 0.jpg, 1.jpg sequentially
-const path = "/local/HASlideshow/backgrounds/";
-
-checkNumber(0, function (exists) {
-  if (exists) recur(2, 1);
-  else {
-    info("No local images found in HASlideshow/backgrounds, slideshow disabled");
-  }
-});
 
 function bs_clearBackground() {
   const elem = bs_getBackgroundElement();
@@ -151,6 +158,7 @@ function bs_checkBackgroundElement(featureVar) {
   if (!elem) {
     let base = featureVar.replace('--bs-', '').replace('-enabled', '');
     if (base === 'doubletap') base = 'double-tap';
+    if (base === 'image') base = 'image-path';
     debug(`Background element not found, cannot check ${base}`);
     return null;
   }
@@ -159,6 +167,7 @@ function bs_checkBackgroundElement(featureVar) {
   if (!currentView) {
     let base = featureVar.replace('--bs-', '').replace('-enabled', '');
     if (base === 'doubletap') base = 'double-tap';
+    if (base === 'image') base = 'image-path';
     debug(`Current view not found, cannot check ${base}`);
     return null;
   }
@@ -166,6 +175,7 @@ function bs_checkBackgroundElement(featureVar) {
   const value = getComputedStyle(currentView).getPropertyValue(featureVar).trim();
   let base = featureVar.replace('--bs-', '').replace('-enabled', '');
   if (base === 'doubletap') base = 'double-tap';
+  if (base === 'image') base = 'image-path';
   const featureName = base.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('-');
 
   debug(`Retrieved ${featureName}: ${value}`);
@@ -184,9 +194,13 @@ debug("Initial updateInterval: " + updateInterval);
 let transitionDurationValue = bs_checkBackgroundElement('--bs-transitionDuration');
 let transitionDuration = transitionDurationValue ? parseInt(transitionDurationValue, 10) : 1000;
 debug("Initial transitionDuration: " + transitionDuration);
+
+// This retrieves the custom image path - default to hardcoded
+let imagePathValue = bs_checkBackgroundElement('--bs-image-path');
+let initialPath = imagePathValue ? imagePathValue : defaultPath;
+debug("Initial image path: " + initialPath);
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-let current;
 let previouslyEnabled = false;
 function bs_ensureBackgroundLayers() {
   const view = bs_getBackgroundElement();
@@ -319,8 +333,8 @@ function bs_transitionToNewBackground(url, isInitial = false) {
   };
 }
 
-function bs_update(isNavigation = false) {
-  debug("bs_update called, isNavigation: " + isNavigation);
+function performUpdate(isNavigation = false) {
+  debug("performUpdate called, isNavigation: " + isNavigation);
   const bgElement = bs_getBackgroundElement();
 
   if (!bgElement) {
@@ -335,7 +349,15 @@ function bs_update(isNavigation = false) {
     if (newInterval && newInterval !== updateInterval) {
       updateInterval = newInterval;
       debug(`Updated interval to ${updateInterval}`);
-      // Note: Interval is already running; to change, would need to restart timer, but for simplicity, keep running
+      // Restart interval if running
+      if (intervalId) {
+        clearInterval(intervalId);
+        intervalId = setInterval(() => {
+          debug("Interval update event");
+          bs_update(false);
+        }, updateInterval * 1000);
+        debug(`Restarted interval at ${updateInterval} seconds`);
+      }
     }
   }
 
@@ -360,10 +382,13 @@ function bs_update(isNavigation = false) {
 
     let url;
     let shouldCycleAndTransition = true;
+    const pathInfo = pathData.get(currentPath);
+    const imagesCount = pathInfo.imagesCount;
+    let current = pathInfo.current;
     let isInitialSetup = (current === undefined);
 
     if (isNavigation) {
-      if (previouslyEnabled && current !== undefined && imagesCount) {
+      if (previouslyEnabled && current !== undefined && imagesCount > 0) {
         // Resume previous image instantly without blanking or transition
         if (bgOld && bgNew && bgOld.style.opacity === '1' && bgNew.style.opacity === '0') {
           // Layers already in correct state (persisted from previous tab) – no need to re-set
@@ -372,7 +397,7 @@ function bs_update(isNavigation = false) {
           isInitialSetup = false;
         } else {
           // Fallback: set previous image instantly (omit cache buster for speed/cache hit)
-          const url = path + current + ".jpg";  // No ?t= for instant resume
+          const url = currentPath + current + ".jpg";  // No ?t= for instant resume
           if (bgOld && bgNew) {
             bgOld.style.backgroundImage = `url("${url}")`;
             bgOld.style.opacity = '1';
@@ -394,15 +419,16 @@ function bs_update(isNavigation = false) {
       debug("Non-navigation update: proceeding to cycle and transition");
     }
 
-    if (shouldCycleAndTransition && imagesCount) {
+    if (shouldCycleAndTransition && imagesCount > 0) {
       if (current === undefined) {
         current = Math.floor(Math.random() * imagesCount);
-        debug(`Initialized current to ${current}`);
+        debug(`Initialized current to ${current} for path ${currentPath}`);
       } else {
         current = (current + seed) % imagesCount;
       }
-      url = path + current + ".jpg?t=" + Date.now(); // Cache buster
-      debug(`Cycling to image ${current}`);
+      pathInfo.current = current;
+      url = currentPath + current + ".jpg?t=" + Date.now(); // Cache buster
+      debug(`Cycling to image ${current} for path ${currentPath}`);
       // Transition to new (or initial)
       bs_transitionToNewBackground(url, isInitialSetup);
       info("Updated background to " + url);
@@ -415,6 +441,22 @@ function bs_update(isNavigation = false) {
     debug("Slideshow not enabled in theme, clearing background");
     bs_clearBackground();
     previouslyEnabled = false;
+  }
+}
+
+function bs_update(isNavigation = false) {
+  debug("bs_update called, isNavigation: " + isNavigation);
+  const imagePathValue = bs_checkBackgroundElement('--bs-image-path');
+  const newPath = imagePathValue ? imagePathValue : defaultPath;
+  if (currentPath !== newPath || !pathData.has(newPath)) {
+    debug(`Path changed or not initialized: from ${currentPath} to ${newPath}`);
+    countImagesForPath(newPath, count => {
+      pathData.set(newPath, {imagesCount: count, current: undefined});
+      currentPath = newPath;
+      performUpdate(isNavigation);
+    });
+  } else {
+    performUpdate(isNavigation);
   }
 }
 
@@ -477,3 +519,11 @@ function bs_start() {
   });
   debug("popstate listener registered");
 }
+
+// Initial setup
+const initialImagePathValue = bs_checkBackgroundElement('--bs-image-path');
+currentPath = initialImagePathValue ? initialImagePathValue : defaultPath;
+countImagesForPath(currentPath, count => {
+  pathData.set(currentPath, {imagesCount: count, current: undefined});
+  bs_start();
+});
