@@ -49,6 +49,8 @@ _Unfortunatly, this is a neccessy and MANUAL step. HACS doesn't allow multipule 
 
 1. Using File editor in Home Assistant, place the following code into your `themes.yaml` file; don't forget to update the values with your preference to use Double-Tap or your own updateInterval and transitionDuration values. Double check your `configuration.yaml` to see which "theme" file is being loaded/referenced. You might not be using `themes.yaml` as your main theme config file. You'll know you did it correctly in a later step when we go to apply the `HASlideshow` theme in your Lovelace Dashboard settings. If you've already created and are using your own custom theme for a specific Dashboard, then you can add the block below to the bottom of your custom theme; just omit the `HASlideshow:` line and add the raw VAR's to your custom theme file.
 
+New Feature: Thank you @Juggler00 for suggesting this! There is a new variable to allow one to specify a separate directory for each dashboard, if using more than one. This change also introduces a nice side effect to also allow you to tweak the update intervals and transition duration timings, if you choose. Again, if you don't specify any directories or timings, then it'll default to the hardcoded variables. To properly take advantage of this new feature, you'll have to create separate themes for each dashboard. If you want you can use HASlideshow1, HASlideshow2 etc. but you can name it whatever you want. I'd suggest naming the theme so it references the name of your dashboard just to keep getting confused. I know I probably would. Just rename `%custom path%` to what ever directory name you want your dash to use.
+
 ```
 HASlideshow:
   # This enables HASlideshow
@@ -57,10 +59,13 @@ HASlideshow:
   # Double-tap the background to force a change
   bs-doubletap-enabled: enabled
 
-  # This value is in seconds
+  # Image Directory (Default = "/local/HASlideshow/backgrounds" - see `Create the images folder` section above to learn more about directories)
+  bs-image-path: "/local/HASlideshow/%custom path%/"
+
+  # This value is in seconds (Default = 600 - 5 min)
   bs-updateInterval: 600
 
-  # This value is in milliseconds
+  # This value is in milliseconds (Default = 1000 - 1 sec)
   bs-transitionDuration: 1000
 ```
 
@@ -78,6 +83,7 @@ You should immediately see one of the background images pop up and at first, the
 * Double tap anywhere on the screen to skip to the next image (Works with either a mouse pointer or a finger on touch screens).
 * Specify your own Background Update Interval (in seconds).
 * Specify your own Transition Animation Duration (in milliseconds).
+* Specify a seperate set of images for each dashboard (See note in the `Setup your HASlideshow Theme` section).
 
 ## Troubleshooting
 Any change to the JS Script or the contents of the `www` folder might require clearing the cache of your browser or the companion mobile app. I've never had to do this if I made changes to the theme file and reloaded it. A quick refresh should be sufficient.
